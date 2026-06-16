@@ -8,6 +8,8 @@ const addBtnn = document.getElementById("addbt");
 const updatBtn = document.getElementById("updatId");
 const cardContaier = document.getElementById("cardContaier");
 
+const spinner = document.getElementById("spinner");
+
 let postArr = [];
 
 let baseURl = "https://jsonplaceholder.typicode.com";
@@ -30,7 +32,7 @@ function creatTodo(eve) {
   let result = "";
   eve.forEach((element) => {
     result += `
-    <div class="col-md-3 my-2  " id=${element.id}>
+    <div class="col-md-4 my-2  " id=${element.id}>
             <div class="card h-100 ">
             <div class="card-header">
               <h2>${element.title}</h2>
@@ -47,11 +49,14 @@ function creatTodo(eve) {
         </div>
     `;
   });
+
   cardContaier.innerHTML = result;
 }
 
 function onSubmitHandalar(eve) {
   eve.preventDefault();
+
+  spinner.classList.remove("d-none");
 
   let newObj = {
     userid: userId.value,
@@ -68,7 +73,7 @@ function onSubmitHandalar(eve) {
     if (xhr.status >= 200 && xhr.status <= 299) {
       let response = JSON.parse(xhr.response);
       let div = document.createElement("div");
-      div.className = "col-md-3";
+      div.className = "col-md-4";
       div.id = response.id;
 
       div.innerHTML = `
@@ -89,23 +94,34 @@ function onSubmitHandalar(eve) {
       cardContaier.prepend(div);
       userForm.reset();
     }
+    swal.fire({
+      title: "New Post Add Successfully",
+      icon: "success",
+      timer: 2000,
+    });
+    spinner.classList.add("d-none");
   };
 }
 
+//
+
 function onEdit(ele) {
-  let editId = ele.closest(".col-md-3").id;
+  spinner.classList.remove("d-none");
+
+  let editId = ele.closest(".col-md-4").id;
   localStorage.setItem("editId", editId);
 
   let editURL = `${baseURl}/posts/${editId}`;
+
   let xhr = new XMLHttpRequest();
   xhr.open("GET", editURL);
-  xhr.setRequestHeader("Content-type", "application/json");
   xhr.send();
 
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status <= 299) {
       let editObj = JSON.parse(xhr.response);
-      cl(editObj);
+
+      userForm.classList.remove("d-none");
 
       title.value = editObj.title;
       body.value = editObj.body;
@@ -113,11 +129,20 @@ function onEdit(ele) {
 
       addBtnn.classList.add("d-none");
       updatBtn.classList.remove("d-none");
+
+      userForm.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
+
+    spinner.classList.add("d-none");
   };
 }
 
 function updateBtn(ele) {
+  spinner.classList.remove("d-none");
+
   let updateId = localStorage.getItem("editId");
   let updateObj = {
     userId: userId.value,
@@ -146,21 +171,48 @@ function updateBtn(ele) {
       cl("something wents wrong");
     }
   };
+  swal.fire({
+    title: "Post Update Successfully",
+    icon: "success",
+    timer: 2000,
+  });
+  spinner.classList.add("d-none");
   userForm.reset();
 }
 
 function onRemove(ele) {
-  let removeId = ele.closest(".col-md-3").id;
-  let removeUrl = `${baseURl}/posts/${removeId}`;
+  spinner.classList.remove("d-none");
 
-  let xhr = new XMLHttpRequest();
-  xhr.open("DELETE", removeUrl);
-  xhr.send(null);
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status <= 299) {
-      ele.closest(".col-md-3").remove();
+  let removeId = ele.closest(".col-md-4").id;
+
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You want to delete it!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      let removeUrl = `${baseURl}/posts/${removeId}`;
+
+      let xhr = new XMLHttpRequest();
+      xhr.open("DELETE", removeUrl);
+      xhr.send(null);
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status <= 299) {
+          ele.closest(".col-md-4").remove();
+          spinner.classList.add("d-none");
+        }
+        swal.fire({
+          title: "Post Delete Successfully",
+          icon: "success",
+          timer: 2000,
+        });
+      };
     }
-  };
+  });
 }
 
 userForm.addEventListener("submit", onSubmitHandalar);
