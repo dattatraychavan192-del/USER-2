@@ -14,7 +14,15 @@ let postArr = [];
 
 let baseURl = "https://jsonplaceholder.typicode.com";
 
-function fetchTodo() {
+function snackbar(msg, icon) {
+  swal.fire({
+    title: msg,
+    icon: icon,
+    timer: 2000,
+  });
+}
+
+function fetchPost() {
   let xhr = new XMLHttpRequest();
   let postURL = `${baseURl}/posts`;
   xhr.open("GET", postURL);
@@ -22,13 +30,13 @@ function fetchTodo() {
   xhr.onload = function () {
     postArr = JSON.parse(xhr.response);
     cl(postArr);
-    creatTodo(postArr);
+    creatPost(postArr);
   };
 }
 
-fetchTodo();
+fetchPost();
 
-function creatTodo(eve) {
+function creatPost(eve) {
   let result = "";
   eve.forEach((element) => {
     result += `
@@ -94,11 +102,7 @@ function onSubmitHandalar(eve) {
       cardContaier.prepend(div);
       userForm.reset();
     }
-    swal.fire({
-      title: "New Post Add Successfully",
-      icon: "success",
-      timer: 2000,
-    });
+    snackbar("New Post Add Successfully", "success");
     spinner.classList.add("d-none");
   };
 }
@@ -167,22 +171,28 @@ function updateBtn(ele) {
 
       addBtnn.classList.remove("d-none");
       updatBtn.classList.add("d-none");
+      div.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+      div.classList.add("highlight");
+
+      setTimeout((highlight) => {
+        div.classList.remove("highlight");
+      }, 3000);
+      
     } else {
       cl("something wents wrong");
     }
   };
-  swal.fire({
-    title: "Post Update Successfully",
-    icon: "success",
-    timer: 2000,
-  });
   spinner.classList.add("d-none");
+  snackbar("Post Update Successfully", "success");
+
   userForm.reset();
 }
 
 function onRemove(ele) {
-  spinner.classList.remove("d-none");
-
   let removeId = ele.closest(".col-md-4").id;
 
   Swal.fire({
@@ -195,6 +205,8 @@ function onRemove(ele) {
     confirmButtonText: "Yes, delete it!",
   }).then((result) => {
     if (result.isConfirmed) {
+      spinner.classList.remove("d-none");
+
       let removeUrl = `${baseURl}/posts/${removeId}`;
 
       let xhr = new XMLHttpRequest();
