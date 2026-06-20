@@ -23,6 +23,8 @@ function snackbar(msg, icon) {
 }
 
 function fetchPost() {
+  spinner.classList.remove("d-none");
+
   let xhr = new XMLHttpRequest();
   let postURL = `${baseURl}/posts`;
   xhr.open("GET", postURL);
@@ -33,6 +35,7 @@ function fetchPost() {
       $('[data-toggle="tooltip"]').tooltip();
     });
     creatPost(postArr);
+    spinner.classList.add("d-none");
   };
 }
 
