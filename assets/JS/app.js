@@ -29,7 +29,9 @@ function fetchPost() {
   xhr.send();
   xhr.onload = function () {
     postArr = JSON.parse(xhr.response);
-    cl(postArr);
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
     creatPost(postArr);
   };
 }
@@ -42,7 +44,7 @@ function creatPost(eve) {
     result += `
     <div class="col-md-4 my-2  " id=${element.id}>
             <div class="card h-100 ">
-            <div class="card-header">
+            <div class="card-header" data-toggle="tooltip" data-placement="top" title="${element.title}">
               <h2>${element.title}</h2>
             </div>
             <div class="card-body">
@@ -81,12 +83,12 @@ function onSubmitHandalar(eve) {
     if (xhr.status >= 200 && xhr.status <= 299) {
       let response = JSON.parse(xhr.response);
       let div = document.createElement("div");
-      div.className = "col-md-4";
+      div.className = "col-md-4 my-2";
       div.id = response.id;
 
       div.innerHTML = `
-       <div class="card shadow-lg ">
-            <div class="card-header">
+       <div class="card shadow-lg  h-100">
+            <div class="card-header" data-toggle="tooltip" data-placement="top" title="${newObj.title}">
               <h2>${newObj.title}</h2>
             </div>
             <div class="card-body">
@@ -163,11 +165,21 @@ function updateBtn(ele) {
   xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status <= 299) {
       let div = document.getElementById(updateId);
-      let h2 = div.querySelector(".card-header h2");
-      let p = div.querySelector(".card-body p");
 
-      h2.innerText = updateObj.title;
-      p.innerText = updateObj.body;
+      div.innerHTML = `
+      <div class="card shadow-lg h-100 ">
+      <div class="card-header" data-toggle="tooltip" data-placement="top" title="${updateObj.title}">
+        <h2>${updateObj.title}</h2>
+      </div>
+      <div class="card-body">
+        <p>${updateObj.body}</p>
+      </div>
+       <div class="card-footer d-flex justify-content-between">
+        <button class="btn btn-warning btn-sm"  id="edit" onclick="onEdit(this)">Edit</button>
+        <button class="btn btn-danger btn-sm"  id="delete" onclick="onRemove(this)">Delete</button>
+      </div>
+      </div>
+      `;
 
       addBtnn.classList.remove("d-none");
       updatBtn.classList.add("d-none");
@@ -181,9 +193,8 @@ function updateBtn(ele) {
       setTimeout((highlight) => {
         div.classList.remove("highlight");
       }, 3000);
-      
     } else {
-      cl("something wents wrong");
+      snackbar("something wents wrong", "error");
     }
   };
   spinner.classList.add("d-none");
@@ -216,13 +227,11 @@ function onRemove(ele) {
         if (xhr.status >= 200 && xhr.status <= 299) {
           ele.closest(".col-md-4").remove();
           spinner.classList.add("d-none");
+          snackbar("Post delete successfully", "success");
         }
-        swal.fire({
-          title: "Post Delete Successfully",
-          icon: "success",
-          timer: 2000,
-        });
       };
+    } else {
+      snackbar("something wents wrong", "error");
     }
   });
 }
